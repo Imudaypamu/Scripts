@@ -1,9 +1,9 @@
 @echo off
 setlocal enabledelayedexpansion
-REM =======================================================
-REM Usage:
-REM CheckFileAndRun.bat <FilePath> <CommandToRunIfNotEmpty>
-REM =======================================================
+echo =======================================================
+echo Author : Uday Kiran Pamu
+echo CheckFileAndRun.bat <FilePath> <CommandToRunIfNotEmpty>
+echo =======================================================
 set "FILE=%~1"
 set "REAL_CMD=%~2"
 echo ===========================================
