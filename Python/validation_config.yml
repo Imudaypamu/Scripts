@@ -1,0 +1,70 @@
+# ======================================================
+# DATA QUALITY VALIDATION CONFIG (BUSINESS SAFE)
+# ======================================================
+
+global:
+  run_id: "DQ_RUN_2026_01_09"
+  fail_on_error: true
+
+# ------------------------------------------------------
+# DB2 CONNECTION DETAILS
+# ------------------------------------------------------
+db2_connection:
+  url: jdbc:db2://<DB2_HOST>:50000/<DB_NAME>
+  user: <DB2_USERNAME>
+  password: <DB2_PASSWORD>
+  driver: com.ibm.db2.jcc.DB2Driver
+
+# ------------------------------------------------------
+# TABLE CONFIG (ONLY ONE TABLE PER FILE)
+# ------------------------------------------------------
+tables:
+  - table_id: ORDERS_30D
+    enabled: true
+
+    # ---------------------------
+    # DB2 SOURCE (QUERY ONLY)
+    # ---------------------------
+    source_db2:
+      read_type: QUERY
+      query: |
+        SELECT *
+        FROM SALES.ORDERS
+        WHERE order_date >= CURRENT DATE - 30 DAYS
+
+    # ---------------------------
+    # GLUE / ATHENA SOURCE (QUERY ONLY)
+    # ---------------------------
+    source_glue:
+      read_type: QUERY
+      query: |
+        SELECT *
+        FROM analytics_db.orders_athena
+        WHERE order_date >= date_add('day', -30, current_date)
+
+    # ---------------------------
+    # COMPOSITE KEYS (MANDATORY)
+    # ---------------------------
+    keys:
+      composite:
+        - order_id
+        - order_date
+
+    # ---------------------------
+    # DECISION THRESHOLDS
+    # ---------------------------
+    thresholds:
+      FAIL:
+        row_diff: 0
+        schema_mismatch: 0
+        hash_mismatch: 0
+
+      WARN:
+        null_pct: 0.5   # % of nulls allowed across full dataset
+
+# ------------------------------------------------------
+# OUTPUT CONFIG
+# ------------------------------------------------------
+output:
+  excel_path: /tmp/ORDERS_30D_validation_doc.xlsx
+  sample_rows: 10
